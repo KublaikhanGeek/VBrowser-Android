@@ -59,12 +59,12 @@
                 <ImageView
                         android:layout_width="16dp"
                         android:layout_height="16dp"
-                        android:id="@+id/headHintQrIcon"
+                        android:id="@+id/main_menu"
                         android:layout_centerVertical="true"
                         android:layout_alignParentRight="true"
                         android:layout_marginRight="13dp"
                         android:layout_marginEnd="27dp"
-                        android:src="@mipmap/qr"/>
+                        android:src="@mipmap/btn_menu"/>
             </RelativeLayout>
 
             <RelativeLayout

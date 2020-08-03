@@ -1,6 +1,16 @@
 <resources>
     <string name="app_name">VBrowser</string>
     <string name="hello_world">Hello world!</string>
+    <string name="accessibility_menu_bookmark">"Bookmark this page"</string>
+    <string name="accessibility_menu_forward">"Go forward"</string>
+    <string name="accessibility_menu_info">"View site information"</string>
+    <string name="download_page">"Download page"</string>
+    <string name="accessibility_btn_refresh">"Refresh page"</string>
+    <string name="menu_help">"Help &amp; feedback"</string>
+    <string name="menu_bookmarks">"Bookmarks"</string>
+    <string name="menu_history">"History"</string>
+    <string name="menu_downloads">"Downloads"</string>
+    <string name="menu_preferences">"Settings"</string>
 
 <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

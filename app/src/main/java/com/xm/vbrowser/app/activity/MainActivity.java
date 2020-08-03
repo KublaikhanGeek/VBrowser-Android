@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
@@ -25,8 +27,13 @@ import android.view.inputmethod.InputMethodManager;
 import android.webkit.MimeTypeMap;
 import android.webkit.ValueCallback;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListPopupWindow;
 import android.widget.ListView;
+import android.widget.PopupMenu;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -70,6 +77,50 @@ import q.rorbin.badgeview.Badge;
 import q.rorbin.badgeview.QBadgeView;
 
 public class MainActivity extends Activity implements EasyPermissions.PermissionCallbacks{
+    /**
+     * Regular Android menu item that contains a title and an icon if icon is specified.
+     */
+    private static final int STANDARD_MENU_ITEM = 0;
+
+    /**
+     * Menu item that has two buttons, the first one is a title and the second one is an icon.
+     * It is different from the regular menu item because it contains two separate buttons.
+     */
+    private static final int TITLE_BUTTON_MENU_ITEM = 1;
+
+    /**
+     * Menu item that has three buttons. Every one of these buttons is displayed as an icon.
+     */
+    private static final int THREE_BUTTON_MENU_ITEM = 2;
+
+    /**
+     * Menu item that has four buttons. Every one of these buttons is displayed as an icon.
+     */
+    private static final int FOUR_BUTTON_MENU_ITEM = 3;
+
+    /**
+     * Menu item that has five buttons. Every one of these buttons is displayed as an icon.
+     */
+    private static final int FIVE_BUTTON_MENU_ITEM = 4;
+
+    /**
+     * The number of view types specified above.  If you add a view type you MUST increment this.
+     */
+    private static final int VIEW_TYPE_COUNT = 5;
+
+    /** IDs of all of the buttons in icon_row_menu_item.xml. */
+    private static final int[] BUTTON_IDS = {
+            R.id.button_one,
+            R.id.button_two,
+            R.id.button_three,
+            R.id.button_four,
+            R.id.button_five
+    };
+
+    private ListPopupWindow mListPop;
+    private Menu mMenu;
+    private ImageView mBtnMenu;
+
     private static final String HOME_URL = "http://go.uc.cn/page/subpage/shipin?uc_param_str=dnfrpfbivecpbtntla";
     private static final String IPHONE_UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1";
 
@@ -91,6 +142,7 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
     private View searchInputPageCancelButton;
     private TextView searchInput;
     private View webViewProgressVIew;
+    private View forwardButton;
 
 
     private Thread refreshGoBackButtonStateThread;
@@ -117,9 +169,231 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
         setContentView(R.layout.activity_main);
 
         initView();
+        mBtnMenu = findViewById(R.id.main_menu);
+        mBtnMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mListPop.show();
+            }
+        });
+        initPopView();
+
+    }
+
+    private void initPopView()
+    {
+        if (mMenu == null)
+        {
+            PopupMenu tempMenu = new PopupMenu(this, mBtnMenu);
+            tempMenu.inflate(R.menu.main_menu);
+            mMenu = tempMenu.getMenu();
+        }
+
+        int numItems = mMenu.size();
+        List<MenuItem> menuItems = new ArrayList<MenuItem>();
+        for (int i = 0; i < numItems; ++i) {
+            MenuItem item = mMenu.getItem(i);
+            if (item.isVisible()) {
+                menuItems.add(item);
+            }
+        }
+
+        LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
+        mListPop = new ListPopupWindow(this, null, android.R.attr.popupMenuStyle);
+        mListPop.setModal(true);//设置是否是模式
+        mListPop.setAnchorView(mBtnMenu);//设置ListPopupWindow的锚点，即关联PopupWindow的显示位置和这个锚点
+        mListPop.setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
+        Rect bgPadding = new Rect();
+        mListPop.getBackground().getPadding(bgPadding);
+
+        int popupWidth = this.getResources().getDimensionPixelSize(R.dimen.menu_width)
+                + bgPadding.left + bgPadding.right;
+
+        mListPop.setWidth(popupWidth);
+        BaseAdapter listAdapter = new TypedListAdapter(this, menuItems, inflater);
+        mListPop.setAdapter(listAdapter);
+    }
+
+    private class TypedListAdapter extends BaseAdapter
+    {
+        private List<MenuItem> mMenuItems;
+        private LayoutInflater mInflater;
+        private Activity mActive;
+        public TypedListAdapter(Activity active, List<MenuItem> datas, LayoutInflater inflater)
+        {
+            mActive = active;
+            mInflater = inflater;
+            mMenuItems = datas;
+        }
+        @Override
+        public int getViewTypeCount()
+        {
+            return VIEW_TYPE_COUNT;
+        }
+        @Override
+        public int getItemViewType(int position)
+        {
+            MenuItem item = getItem(position);
+            int viewCount = item.hasSubMenu() ? item.getSubMenu().size() : 1;
+
+            if (viewCount == 5) {
+                return FIVE_BUTTON_MENU_ITEM;
+            } else if (viewCount == 4) {
+                return FOUR_BUTTON_MENU_ITEM;
+            } else if (viewCount == 3) {
+                return THREE_BUTTON_MENU_ITEM;
+            } else if (viewCount == 2) {
+                return TITLE_BUTTON_MENU_ITEM;
+            }
+            return STANDARD_MENU_ITEM;
+        }
+        @Override
+        public int getCount()
+        {
+            return mMenuItems.size();
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return getItem(position).getItemId();
+        }
+
+        @Override
+        public MenuItem getItem(int position) {
+            if (position == ListView.INVALID_POSITION) return null;
+            assert position >= 0;
+            assert position < mMenuItems.size();
+            return mMenuItems.get(position);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent)
+        {
+            int type = getItemViewType(position);
+            final MenuItem item = getItem(position);
+            switch (getItemViewType(position)) {
+                case STANDARD_MENU_ITEM: {
+                    StandardMenuItemViewHolder holder = null;
+                    if (convertView == null
+                            || !(convertView.getTag() instanceof StandardMenuItemViewHolder)) {
+                        holder = new StandardMenuItemViewHolder();
+                        convertView = mInflater.inflate(R.layout.menu_item, parent, false);
+                        holder.text = (TextView) convertView.findViewById(R.id.menu_item_text);
+                        holder.image = (ImageView) convertView.findViewById(R.id.menu_item_icon);
+                        convertView.setTag(holder);
+                    } else {
+                        holder = (StandardMenuItemViewHolder) convertView.getTag();
+                    }
+
+                    setupStandardMenuItemViewHolder(holder, convertView, item);
+                    break;
+                }
+                case FIVE_BUTTON_MENU_ITEM: {
+                    convertView = createMenuItemRow(convertView, parent, item, 5);
+                    break;
+                }
+                default:
+                    assert false : "Unexpected MenuItem type";
+            }
+            return convertView;
+        }
+
+        private void setupStandardMenuItemViewHolder(StandardMenuItemViewHolder holder,
+                                                     View convertView, final MenuItem item) {
+            // Set up the icon.
+            Drawable icon = item.getIcon();
+            holder.image.setImageDrawable(icon);
+            holder.image.setVisibility(icon == null ? View.GONE : View.VISIBLE);
+            holder.text.setText(item.getTitle());
+            holder.text.setContentDescription(item.getTitleCondensed());
+
+            boolean isEnabled = item.isEnabled();
+            // Set the text color (using a color state list).
+            holder.text.setEnabled(isEnabled);
+            // This will ensure that the item is not highlighted when selected.
+            convertView.setEnabled(isEnabled);
+
+            convertView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //                   mAppMenu.onItemClick(item);
+                    mActive.onOptionsItemSelected(item);
+                }
+            });
+        }
+
+        private View createMenuItemRow(
+                View convertView, ViewGroup parent, MenuItem item, int numItems) {
+            RowItemViewHolder holder = null;
+            if (convertView == null
+                    || !(convertView.getTag() instanceof RowItemViewHolder)
+                    || ((RowItemViewHolder) convertView.getTag()).buttons.length != numItems) {
+                holder = new RowItemViewHolder(numItems);
+                convertView = mInflater.inflate(R.layout.icon_row_menu_item, parent, false);
+
+                // Save references to all the buttons.
+                for (int i = 0; i < numItems; i++) {
+                    holder.buttons[i] =
+                            (ImageView) convertView.findViewById(BUTTON_IDS[i]);
+                }
+
+                // Remove unused menu items.
+                for (int j = numItems; j < 5; j++) {
+                    ((ViewGroup) convertView).removeView(convertView.findViewById(BUTTON_IDS[j]));
+                }
+
+                convertView.setTag(holder);
+            } else {
+                holder = (RowItemViewHolder) convertView.getTag();
+            }
+
+            for (int i = 0; i < numItems; i++) {
+                setupImageButton(holder.buttons[i], item.getSubMenu().getItem(i));
+            }
+            convertView.setFocusable(false);
+            convertView.setEnabled(false);
+            return convertView;
+        }
+
+        private void setupImageButton(ImageView button, final MenuItem item) {
+            // Store and recover the level of image as button.setimageDrawable
+            // resets drawable to default level.
+            int currentLevel = item.getIcon().getLevel();
+            button.setImageDrawable(item.getIcon());
+            item.getIcon().setLevel(currentLevel);
+            button.setEnabled(item.isEnabled());
+            button.setFocusable(item.isEnabled());
+            button.setContentDescription(item.getTitleCondensed());
+
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+//                    mAppMenu.onItemClick(item);
+                    mActive.onOptionsItemSelected(item);
+                }
+            });
+
+            // Menu items may be hidden by command line flags before they get to this point.
+            button.setVisibility(item.isVisible() ? View.VISIBLE : View.GONE);
+        }
+
     }
 
 
+    static class StandardMenuItemViewHolder
+    {
+        public TextView text;
+        public ImageView image;
+    }
+
+    private static class RowItemViewHolder
+    {
+        public ImageView[] buttons;
+
+        RowItemViewHolder(int numButtons) {
+            buttons = new ImageView[numButtons];
+        }
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -221,6 +495,8 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
         searchInputPageCancelButton = findViewById(R.id.searchInputPageCancelButton);
         searchInput = (TextView) findViewById(R.id.searchInput);
         webViewProgressVIew = findViewById(R.id.webViewProgressVIew);
+        forwardButton = findViewById(R.id.forward_menu_id);
+
     }
 
     private void mainInit() {
@@ -481,6 +757,15 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
             updateBottomButtonStatus(bottomGoBackButton, false);
         }else{
             updateBottomButtonStatus(bottomGoBackButton, true);
+        }
+    }
+
+    private void refreshForwardButtonStatus() {
+        boolean canForward= mainWebView.getNavigationHistory().canGoForward();
+        if(canForward){
+            updateBottomButtonStatus(forwardButton, false);
+        }else{
+            updateBottomButtonStatus(forwardButton, true);
         }
     }
 
@@ -845,5 +1130,35 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
 
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId())
+        {
+            case R.id.offline_page_id:
+                Intent intent = new Intent(MainActivity.this, DownloadCenterActivity.class);
+                startActivity(intent);
+                break;
 
+            case R.id.forward_menu_id:
+                        if(!mainWebView.getNavigationHistory().canGoForward()){
+                            refreshForwardButtonStatus();
+                            return;
+                        }else{
+                            mainWebView.getNavigationHistory().navigate(XWalkNavigationHistory.Direction.FORWARD, 1);
+                            refreshForwardButtonStatus();
+                        }
+                    }
+                    break;
+
+            case R.id.reload_menu_id:
+                mainWebView.reload(XWalkView.RELOAD_IGNORE_CACHE);
+                break;
+
+            default:
+                break;
+
+        }
+        return true;
+//        return super.onOptionsItemSelected(item);
+    }
 }
