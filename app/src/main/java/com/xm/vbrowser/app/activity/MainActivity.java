@@ -7,17 +7,14 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.net.http.SslError;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Message;
 import android.provider.Settings;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
+import androidx.annotation.NonNull;
+
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.*;
@@ -27,7 +24,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.webkit.MimeTypeMap;
 import android.webkit.ValueCallback;
 import android.widget.BaseAdapter;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListPopupWindow;
@@ -35,9 +31,7 @@ import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.PopupWindow;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.alibaba.fastjson.JSON;
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
 import com.xm.vbrowser.app.MainApplication;
@@ -58,9 +52,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.StringBufferInputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.net.URLEncoder;
@@ -70,9 +61,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.xwalk.core.*;
 
 import pub.devrel.easypermissions.AfterPermissionGranted;
-import pub.devrel.easypermissions.AppSettingsDialog;
 import pub.devrel.easypermissions.EasyPermissions;
-import pub.devrel.easypermissions.PermissionRequest;
 import q.rorbin.badgeview.Badge;
 import q.rorbin.badgeview.QBadgeView;
 
@@ -143,6 +132,7 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
     private TextView searchInput;
     private View webViewProgressVIew;
     private View forwardButton;
+    private View fabButton;
 
 
     private Thread refreshGoBackButtonStateThread;
@@ -496,6 +486,7 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
         searchInput = (TextView) findViewById(R.id.searchInput);
         webViewProgressVIew = findViewById(R.id.webViewProgressVIew);
         forwardButton = findViewById(R.id.forward_menu_id);
+        fabButton = findViewById(R.id.fab);
 
     }
 
@@ -609,6 +600,27 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
             }
         });
 
+        fabButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(foundVideoInfoMap.isEmpty()){
+                    return;
+                }
+                NewItemAdapter newItemAdapter = (NewItemAdapter)newItemListView.getAdapter();
+                newItemAdapter.notifyDataSetChanged();
+                hideNewItemPage(false);
+            }
+
+        });
+
+        fabButton.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                foundVideoInfoMap.clear();
+                refreshNewItemButtonStatus();
+                return true;
+            }
+        });
 
     }
 
@@ -1140,15 +1152,13 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
                 break;
 
             case R.id.forward_menu_id:
-                        if(!mainWebView.getNavigationHistory().canGoForward()){
-                            refreshForwardButtonStatus();
-                            return;
-                        }else{
-                            mainWebView.getNavigationHistory().navigate(XWalkNavigationHistory.Direction.FORWARD, 1);
-                            refreshForwardButtonStatus();
-                        }
-                    }
-                    break;
+                if(!mainWebView.getNavigationHistory().canGoForward()){
+                    refreshForwardButtonStatus();
+                }else{
+                    mainWebView.getNavigationHistory().navigate(XWalkNavigationHistory.Direction.FORWARD, 1);
+                    refreshForwardButtonStatus();
+                }
+                break;
 
             case R.id.reload_menu_id:
                 mainWebView.reload(XWalkView.RELOAD_IGNORE_CACHE);

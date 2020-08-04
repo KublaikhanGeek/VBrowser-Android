@@ -3,7 +3,6 @@ package com.xm.vbrowser.app.service;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -11,12 +10,11 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.IBinder;
-import android.support.annotation.RequiresApi;
-import android.support.v4.app.NotificationCompat;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.NotificationCompat;
 
 import com.xm.vbrowser.app.MainApplication;
 import com.xm.vbrowser.app.R;
-import com.xm.vbrowser.app.activity.MainActivity;
 
 public class DownloadForegroundService extends Service {
     private static final int ONGOING_NOTIFICATION_ID = 1;

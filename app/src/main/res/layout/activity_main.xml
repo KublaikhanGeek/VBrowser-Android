@@ -1,12 +1,15 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" tools:context=".MainActivity">
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".MainActivity">
 
 
     <RelativeLayout
             android:layout_width="fill_parent"
             android:layout_height="fill_parent">
+
 
         <RelativeLayout
                 android:layout_width="fill_parent"
@@ -101,6 +104,7 @@
                 android:layout_height="39dp"
                 android:layout_alignParentBottom="true"
                 android:id="@+id/pageBottomArea"
+                android:visibility="gone"
                 android:background="#f9f9f9">
 
             <RelativeLayout
@@ -236,13 +240,25 @@
                 android:layout_above="@+id/pageBottomArea"
                 android:id="@+id/fragmentPlaceHolder">
 
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:backgroundTint="@drawable/main_download_button_selector"
+                android:src="@drawable/ic_get_app_white_24dp"/>
+
             <org.xwalk.core.XWalkView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:id="@+id/mainWebView"
                     />
 
+
         </RelativeLayout>
+
+
     </RelativeLayout>
 
     <RelativeLayout

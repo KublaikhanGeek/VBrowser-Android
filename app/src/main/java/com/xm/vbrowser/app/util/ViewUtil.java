@@ -2,7 +2,7 @@ package com.xm.vbrowser.app.util;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.support.v7.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 
 /**
  * Created by xm on 17/8/17.
